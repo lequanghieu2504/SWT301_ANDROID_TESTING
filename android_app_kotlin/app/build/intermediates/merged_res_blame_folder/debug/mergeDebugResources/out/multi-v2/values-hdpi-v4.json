@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.fpt.datetimechecker.app-mergeDebugResources-2:/values-hdpi-v4/values-hdpi-v4.xml",
+            "map": [
+                {
+                    "source": "D:\\gradle_cache\\caches\\8.11.1\\transforms\\b6911d9274b32a52a4a039143d780668\\transformed\\appcompat-1.6.1\\res\\values-hdpi-v4\\values-hdpi-v4.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "6",
+                        "endColumns": "13",
+                        "endOffsets": "327"
+                    }
+                }
+            ]
+        }
+    ]
+}

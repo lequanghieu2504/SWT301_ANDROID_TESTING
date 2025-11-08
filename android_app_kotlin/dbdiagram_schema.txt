@@ -1,0 +1,216 @@
+// School Health Management System Database Design
+// Total: 14 tables
+
+Table users {
+  user_id int [pk, increment]
+  username varchar(50) [unique, not null]
+  password_hash varchar(255) [not null]
+  full_name varchar(100) [not null]
+  email varchar(100) [unique]
+  phone varchar(20)
+  role varchar(20) [not null, note: 'admin, health_staff, parent, teacher']
+  is_active boolean [default: true]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table students {
+  student_id int [pk, increment]
+  student_code varchar(20) [unique, not null]
+  full_name varchar(100) [not null]
+  date_of_birth date [not null]
+  gender varchar(10) [not null, note: 'male, female']
+  class_name varchar(20) [not null]
+  grade varchar(10) [not null]
+  address text
+  parent_id int [ref: > users.user_id]
+  emergency_contact varchar(20)
+  blood_type varchar(5)
+  is_active boolean [default: true]
+  created_at timestamp [default: `now()`]
+}
+
+Table health_records {
+  record_id int [pk, increment]
+  student_id int [ref: > students.student_id, not null]
+  allergies text
+  chronic_diseases text
+  medical_history text
+  vision_status varchar(50)
+  hearing_status varchar(50)
+  height decimal(5,2)
+  weight decimal(5,2)
+  bmi decimal(4,2)
+  blood_pressure varchar(20)
+  special_notes text
+  created_by int [ref: > users.user_id]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table vaccinations {
+  vaccination_id int [pk, increment]
+  vaccination_name varchar(100) [not null]
+  description text
+  recommended_age_months int
+  is_mandatory boolean [default: true]
+  is_active boolean [default: true]
+  created_at timestamp [default: `now()`]
+}
+
+Table vaccination_records {
+  record_id int [pk, increment]
+  student_id int [ref: > students.student_id, not null]
+  vaccination_id int [ref: > vaccinations.vaccination_id, not null]
+  vaccination_date date
+  batch_number varchar(50)
+  administrator varchar(100)
+  side_effects text
+  status varchar(20) [default: 'scheduled', note: 'scheduled, completed, postponed, declined']
+  parent_consent boolean [default: false]
+  notes text
+  created_by int [ref: > users.user_id]
+  created_at timestamp [default: `now()`]
+}
+
+Table medical_events {
+  event_id int [pk, increment]
+  student_id int [ref: > students.student_id, not null]
+  event_type varchar(20) [not null, note: 'accident, illness, injury, emergency, outbreak']
+  event_date datetime [not null]
+  description text [not null]
+  symptoms text
+  severity varchar(20) [default: 'medium', note: 'low, medium, high, critical']
+  treatment_given text
+  medication_given text
+  parent_notified boolean [default: false]
+  requires_followup boolean [default: false]
+  followup_notes text
+  handled_by int [ref: > users.user_id]
+  created_at timestamp [default: `now()`]
+}
+
+Table medications {
+  medication_id int [pk, increment]
+  medication_name varchar(100) [not null]
+  generic_name varchar(100)
+  dosage_form varchar(50)
+  strength varchar(50)
+  manufacturer varchar(100)
+  expiry_date date
+  storage_requirements text
+  contraindications text
+  is_active boolean [default: true]
+  created_at timestamp [default: `now()`]
+}
+
+Table student_medications {
+  record_id int [pk, increment]
+  student_id int [ref: > students.student_id, not null]
+  medication_id int [ref: > medications.medication_id, not null]
+  dosage varchar(100) [not null]
+  frequency varchar(100) [not null]
+  duration_days int
+  start_date date [not null]
+  end_date date
+  special_instructions text
+  parent_provided boolean [default: true]
+  quantity_provided int
+  quantity_remaining int
+  status varchar(20) [default: 'active', note: 'active, completed, discontinued']
+  created_by int [ref: > users.user_id]
+  created_at timestamp [default: `now()`]
+}
+
+Table medical_supplies {
+  supply_id int [pk, increment]
+  supply_name varchar(100) [not null]
+  category varchar(50)
+  unit_of_measure varchar(20)
+  current_stock int [default: 0]
+  minimum_stock int [default: 0]
+  unit_cost decimal(10,2)
+  supplier varchar(100)
+  expiry_date date
+  storage_location varchar(100)
+  is_active boolean [default: true]
+  created_at timestamp [default: `now()`]
+}
+
+Table health_checkups {
+  checkup_id int [pk, increment]
+  checkup_name varchar(100) [not null]
+  checkup_type varchar(20) [not null, note: 'annual, semester, monthly, special']
+  grade_levels varchar(100) [note: 'JSON array of applicable grades']
+  scheduled_date date [not null]
+  checkup_items text [note: 'JSON array of checkup items']
+  status varchar(20) [default: 'planned', note: 'planned, ongoing, completed, cancelled']
+  created_by int [ref: > users.user_id]
+  created_at timestamp [default: `now()`]
+}
+
+Table health_checkup_records {
+  record_id int [pk, increment]
+  checkup_id int [ref: > health_checkups.checkup_id, not null]
+  student_id int [ref: > students.student_id, not null]
+  checkup_date date [not null]
+  height decimal(5,2)
+  weight decimal(5,2)
+  bmi decimal(4,2)
+  vision_left varchar(20)
+  vision_right varchar(20)
+  hearing_status varchar(50)
+  dental_status varchar(100)
+  blood_pressure varchar(20)
+  heart_rate int
+  temperature decimal(4,2)
+  other_findings text
+  recommendations text
+  requires_followup boolean [default: false]
+  followup_scheduled_date date
+  parent_notified boolean [default: false]
+  examiner_id int [ref: > users.user_id]
+  created_at timestamp [default: `now()`]
+}
+
+Table notifications {
+  notification_id int [pk, increment]
+  recipient_id int [ref: > users.user_id, not null, note: 'user_id of parent']
+  student_id int [ref: > students.student_id]
+  notification_type varchar(30) [not null, note: 'vaccination_consent, checkup_notice, medical_event, medication_reminder, general']
+  title varchar(200) [not null]
+  content text [not null]
+  is_read boolean [default: false]
+  requires_response boolean [default: false]
+  response_deadline date
+  parent_response text
+  response_date datetime
+  sent_at timestamp [default: `now()`]
+}
+
+Table school_info {
+  info_id int [pk, increment]
+  school_name varchar(200) [not null]
+  school_address text
+  phone varchar(20)
+  email varchar(100)
+  website varchar(100)
+  principal_name varchar(100)
+  health_room_location varchar(100)
+  emergency_procedures text
+  school_year varchar(10)
+  total_students int
+  updated_by int [ref: > users.user_id]
+  updated_at timestamp [default: `now()`]
+}
+
+Table system_settings {
+  setting_id int [pk, increment]
+  setting_key varchar(100) [unique, not null]
+  setting_value text
+  description text
+  category varchar(50)
+  is_active boolean [default: true]
+  updated_by int [ref: > users.user_id]
+  updated_at timestamp [default: `now()`]
+} 
